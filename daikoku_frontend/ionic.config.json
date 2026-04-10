@@ -1,0 +1,7 @@
+{
+  "name": "daikoku_frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
