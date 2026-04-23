@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
@@ -19,7 +19,6 @@ import {
 } from 'ionicons/icons';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { forkJoin, of } from 'rxjs';
 
 export interface Category {
   id: number;
@@ -67,27 +66,25 @@ export const AVAILABLE_ICONS = [
     IonSegment, IonSegmentButton, IonText, IonSpinner, IonGrid, IonRow, IonCol,
   ]
 })
-export class TransactionModalComponent implements OnInit {
+export class TransactionModalComponent implements OnInit, AfterViewInit {
 
   @Input() transactionType: 'income' | 'expense' = 'expense';
+  @Input() transaction: any = null;
 
-  // Datos del formulario
-  type: 'income' | 'expense'  = 'expense';
-  amount: number | null        = null;
-  description                  = '';
-  date                         = new Date().toISOString().split('T')[0];
+  type: 'income' | 'expense'        = 'expense';
+  amount: number | null             = null;
+  description                       = '';
+  date                              = new Date().toISOString().split('T')[0];
   selectedCategoryId: number | null = null;
 
-  // Categorías
   categories: Category[] = [];
   loadingCategories      = false;
 
-  // Crear nueva categoría
-  showNewCategory        = false;
-  newCategoryName        = '';
-  newCategoryIcon        = 'cash-outline';
-  showIconPicker         = false;
-  availableIcons         = AVAILABLE_ICONS;
+  showNewCategory  = false;
+  newCategoryName  = '';
+  newCategoryIcon  = 'cash-outline';
+  showIconPicker   = false;
+  availableIcons   = AVAILABLE_ICONS;
 
   error   = '';
   loading = false;
@@ -110,8 +107,19 @@ export class TransactionModalComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.type = this.transactionType;
     this.loadCategories();
+  }
+
+  ngAfterViewInit() {
+    if (this.transaction) {
+      this.type               = this.transaction.type;
+      this.amount             = this.transaction.amount;
+      this.description        = this.transaction.description;
+      this.date               = this.transaction.date;
+      this.selectedCategoryId = this.transaction.category;
+    } else {
+      this.type = this.transactionType;
+    }
   }
 
   loadCategories() {
@@ -146,7 +154,6 @@ export class TransactionModalComponent implements OnInit {
     this.loading = true;
 
     try {
-      // Si hay una nueva categoría, crearla primero
       if (this.showNewCategory && this.newCategoryName.trim()) {
         const newCat = await this.http.post<Category>(
           `${this.apiUrl}/categories/`,
@@ -155,17 +162,25 @@ export class TransactionModalComponent implements OnInit {
         this.selectedCategoryId = newCat!.id;
       }
 
-      // Crear la transacción
-      await this.http.post(
-        `${this.apiUrl}/transactions/`,
-        {
-          type:        this.type,
-          amount:      this.amount,
-          description: this.description,
-          date:        this.date,
-          category:    this.selectedCategoryId ?? null,
-        }
-      ).toPromise();
+      const payload = {
+        type:        this.type,
+        amount:      this.amount,
+        description: this.description,
+        date:        this.date,
+        category:    this.selectedCategoryId ?? null,
+      };
+
+      if (this.transaction) {
+        await this.http.patch(
+          `${this.apiUrl}/transactions/${this.transaction.id}/`,
+          payload
+        ).toPromise();
+      } else {
+        await this.http.post(
+          `${this.apiUrl}/transactions/`,
+          payload
+        ).toPromise();
+      }
 
       this.loading = false;
       this.modalCtrl.dismiss({ success: true }, 'confirm');

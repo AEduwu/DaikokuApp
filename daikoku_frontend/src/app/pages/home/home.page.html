@@ -25,7 +25,7 @@
   <!-- Lista de transacciones -->
   <ion-list>
     @for(tx of transactionsFiltradas; track tx.id) {
-      <ion-item>
+      <ion-item button detail="false" (click)="abrirDetalle(tx)">
         <ion-label>
           <h3>{{ tx.category_name ?? 'Sin categoría' }}</h3>
           <p>{{ tx.description }}</p>
