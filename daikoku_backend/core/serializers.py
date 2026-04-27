@@ -1,23 +1,26 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction as db_transaction
-from .models import User, Category, Transaction, Goal
+from .models import User, Category, Transaction, Goal, Budget
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     """Registro de usuario. Maneja la creación con password hasheado."""
 
-    password  = serializers.CharField(write_only=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, label="Confirmar contraseña")
+    password = serializers.CharField(
+        write_only=True, validators=[validate_password])
+    password2 = serializers.CharField(
+        write_only=True, label="Confirmar contraseña")
 
     class Meta:
-        model  = User
+        model = User
         fields = ["id", "username", "email", "password", "password2"]
 
     def validate(self, attrs):
         if attrs["password"] != attrs.pop("password2"):
-            raise serializers.ValidationError({"password2": "Las contraseñas no coinciden."})
+            raise serializers.ValidationError(
+                {"password2": "Las contraseñas no coinciden."})
         return attrs
 
     def create(self, validated_data):
@@ -28,7 +31,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """Lectura y actualización del perfil (sin password)."""
 
     class Meta:
-        model  = User
+        model = User
         fields = [
             "id", "username", "email",
             "register_date", "last_login",
@@ -39,12 +42,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+    new_password = serializers.CharField(
+        write_only=True, validators=[validate_password])
 
     def validate_old_password(self, value):
         user = self.context["request"].user
         if not user.check_password(value):
-            raise serializers.ValidationError("La contraseña actual es incorrecta.")
+            raise serializers.ValidationError(
+                "La contraseña actual es incorrecta.")
         return value
 
     def save(self):
@@ -65,7 +70,7 @@ class CategorySerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model  = Category
+        model = Category
         fields = ["id", "category_name", "category_icon", "is_system"]
 
     def get_is_system(self, obj) -> bool:
@@ -76,12 +81,15 @@ class CategorySerializer(serializers.ModelSerializer):
         validated_data["user"] = self.context["request"].user
         return super().create(validated_data)
 
+
 class TransactionSerializer(serializers.ModelSerializer):
     """CRUD completo de transacciones."""
 
     # Lectura: muestra el nombre de la categoría y tipo en texto legible
-    category_name = serializers.CharField(source="category.category_name", read_only=True)
-    type_display  = serializers.CharField(source="get_type_display", read_only=True)
+    category_name = serializers.CharField(
+        source="category.category_name", read_only=True)
+    type_display = serializers.CharField(
+        source="get_type_display", read_only=True)
 
     # Escritura: recibe el id de categoría
     category = serializers.PrimaryKeyRelatedField(
@@ -96,7 +104,7 @@ class TransactionSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model  = Transaction
+        model = Transaction
         fields = [
             "id", "type", "type_display",
             "category", "category_name",
@@ -145,24 +153,26 @@ class TransactionSummarySerializer(serializers.Serializer):
     para un período dado (mes actual por defecto).
     """
 
-    total_income   = serializers.DecimalField(max_digits=12, decimal_places=2)
+    total_income = serializers.DecimalField(max_digits=12, decimal_places=2)
     total_expenses = serializers.DecimalField(max_digits=12, decimal_places=2)
-    balance        = serializers.DecimalField(max_digits=12, decimal_places=2)
+    balance = serializers.DecimalField(max_digits=12, decimal_places=2)
     budget_used_pct = serializers.FloatField(
         help_text="Porcentaje del presupuesto mensual consumido (0–100)"
     )
+
 
 class GoalSerializer(serializers.ModelSerializer):
     """CRUD de metas de ahorro."""
 
     progress_percentage = serializers.FloatField(read_only=True)
-    remaining_amount    = serializers.DecimalField(
+    remaining_amount = serializers.DecimalField(
         max_digits=12, decimal_places=2, read_only=True
     )
-    state_display = serializers.CharField(source="get_state_display", read_only=True)
+    state_display = serializers.CharField(
+        source="get_state_display", read_only=True)
 
     class Meta:
-        model  = Goal
+        model = Goal
         fields = [
             "id", "name",
             "target_amount", "current_amount",
@@ -177,7 +187,8 @@ class GoalSerializer(serializers.ModelSerializer):
 
     def validate_target_amount(self, value):
         if value <= 0:
-            raise serializers.ValidationError("El monto objetivo debe ser mayor a 0.")
+            raise serializers.ValidationError(
+                "El monto objetivo debe ser mayor a 0.")
         return value
 
     def validate(self, attrs):
@@ -209,6 +220,7 @@ class GoalContributionSerializer(serializers.Serializer):
         goal.add_contribution(self.validated_data["amount"])
         return goal
 
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -222,3 +234,45 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
 
         return data
+
+
+class BudgetSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(
+        source="category.category_name", read_only=True)
+    category_icon = serializers.CharField(
+        source="category.category_icon", read_only=True)
+    spent_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True)
+    remaining_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True)
+    progress_percentage = serializers.FloatField(read_only=True)
+
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Budget
+        fields = [
+            "id", "category", "category_name", "category_icon",
+            "amount", "month",
+            "spent_amount", "remaining_amount", "progress_percentage"
+        ]
+        read_only_fields = ["id", "category_name", "category_icon",
+                            "spent_amount", "remaining_amount", "progress_percentage"]
+
+    def validate_category(self, category):
+        request = self.context["request"]
+        if category.user and category.user != request.user:
+            raise serializers.ValidationError(
+                "Esta categoría no te pertenece.")
+        return category
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El monto debe ser mayor a 0.")
+        return value
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)
