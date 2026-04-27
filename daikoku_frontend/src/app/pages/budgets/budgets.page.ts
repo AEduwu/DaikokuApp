@@ -5,12 +5,13 @@ import {
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons,
   IonBackButton, IonButton, IonIcon, IonItem, IonLabel,
   IonList, IonProgressBar, IonNote, IonFab, IonFabButton,
-  AlertController
+  AlertController, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { addOutline, trashOutline, createOutline } from 'ionicons/icons';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { CategoryPickerComponent } from '../../components/category-picker/category-picker.component';
 
 interface Budget {
   id: number;
@@ -58,6 +59,7 @@ export class BudgetsPage implements OnInit {
   constructor(
     private http: HttpClient,
     private alertCtrl: AlertController,
+    private modalCtrl: ModalController,
   ) {
     addIcons({ addOutline, trashOutline, createOutline });
   }
@@ -105,35 +107,24 @@ export class BudgetsPage implements OnInit {
 
   async agregarPresupuesto() {
     const categoriasDisponibles = this.categories
-      .filter(c => !this.budgets.find(b => b.category === c.id))
-      .map(c => ({ type: 'radio', label: c.category_name, value: c.id }));
+      .filter(c => !this.budgets.find(b => b.category === c.id));
 
-    if (categoriasDisponibles.length === 0) {
-      const alert = await this.alertCtrl.create({
-        header: 'Sin categorías',
-        message: 'Ya tienes presupuesto para todas las categorías disponibles.',
-        buttons: ['OK']
-      });
-      await alert.present();
-      return;
-    }
-
-    const alertCat = await this.alertCtrl.create({
-      header: 'Selecciona una categoría',
-      inputs: categoriasDisponibles as any,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Siguiente',
-          handler: (categoryId) => {
-            if (!categoryId) return false;
-            this.pedirMonto(categoryId);
-            return true;
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: CategoryPickerComponent,
+      componentProps: { categories: categoriasDisponibles },
+      breakpoints: [0, 0.9],
+      initialBreakpoint: 0.9,
     });
-    await alertCat.present();
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'selected' && data?.category) {
+      if (!this.categories.find(c => c.id === data.category.id)) {
+        this.categories.push(data.category);
+      }
+      this.pedirMonto(data.category.id);
+    }
   }
 
   async pedirMonto(categoryId: number) {
