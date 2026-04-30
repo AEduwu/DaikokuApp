@@ -1,0 +1,154 @@
+.login-content {
+  --background: #f8f9f7;
+}
+
+.login-header {
+  height: 390px;
+  padding: 140px 28px 0;
+
+  background: linear-gradient(
+    180deg,
+    #5FDD9D 0%,
+    #84EEA3 60%,
+    #AAFFA9 100%
+  );
+
+  border-bottom-left-radius: 80px;
+  border-bottom-right-radius: 80px;
+
+  text-align: center;
+  color: white;
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.login-header p {
+  margin-top: 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-card {
+  width: 82%;
+  max-width: 360px;
+
+  margin: -120px auto 0;  /* antes -190px */
+  padding: 22px 20px 24px;
+
+  background: white;
+  border-radius: 8px;
+
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+
+  position: relative;
+  z-index: 2;
+}
+
+.google-button {
+  height: 48px;
+  margin-bottom: 24px;
+
+  --background: white;
+  --color: #333;
+  --border-color: #eeeeee;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  text-transform: none;
+  font-weight: 700;
+}
+
+.google-g {
+  color: #2bae66;
+  font-size: 20px;
+  font-weight: 900;
+  margin-right: 12px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 22px;
+}
+
+.divider span {
+  flex: 1;
+  height: 1px;
+  background: #eeeeee;
+}
+
+.divider p {
+  margin: 0;
+  color: #999;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.custom-input {
+  min-height: 46px;
+  margin-bottom: 14px;
+  padding: 0 14px !important;
+
+  border: 1px solid #eeeeee;
+  border-radius: 8px;
+
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --color: #222;
+  --placeholder-color: #222;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin: 8px 0 22px;
+
+  font-size: 11px;
+  color: #777;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.options a {
+  color: #555;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-button {
+  height: 52px;
+
+  --background: #5FDD9D;
+  --background-activated: #47c986;
+  --color: white;
+  --border-radius: 8px;
+
+  text-transform: none;
+  font-weight: 700;
+}
+
+.register-text {
+  margin: 22px 0 0;
+  text-align: center;
+  color: #888;
+  font-size: 12px;
+}
+
+.register-text a {
+  color: #555;
+  font-weight: 800;
+  text-decoration: none;
+}

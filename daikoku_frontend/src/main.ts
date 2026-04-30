@@ -7,6 +7,11 @@ import { authInterceptor } from './app/interceptors/auth-interceptor';
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 
+import { registerLocaleData } from '@angular/common';
+import localeEsCl from '@angular/common/locales/es-CL';
+
+registerLocaleData(localeEsCl);
+
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -15,3 +20,4 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([authInterceptor])),
   ],
 });
+

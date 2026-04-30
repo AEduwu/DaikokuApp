@@ -1,0 +1,127 @@
+.landing-content {
+  --background: linear-gradient(
+    180deg,
+    #5FDD9D 0%,
+    #84EEA3 55%,
+    #AAFFA9 100%
+  );
+}
+
+.landing-screen {
+  min-height: 100%;
+  padding: 90px 32px 55px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* patrón detrás de todo */
+.landing-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-image: url("/assets/img/fujimi.png");
+  background-size: 800px;
+  background-repeat: repeat;
+  background-position: center;
+
+  opacity: 0.06;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* contenido sobre el patrón */
+.logo,
+.landing-text,
+.gatito {
+  position: relative;
+  z-index: 1;
+}
+
+.logo {
+  width: 500;
+  max-width: 95vw;
+  margin-bottom: 30px;
+  animation: aparecerLogo 1.2s ease-out;
+}
+
+.landing-text {
+  width: 100%;
+  margin-top: -20px;
+  animation: aparecerTexto 1.5s ease;
+}
+
+h1 {
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 32px;
+}
+
+.login-button {
+  width: 82%;
+  margin: 0 auto 80px;
+
+  --background: #18c77c;
+  --background-hover: #18c77c;
+  --background-activated: #12b56f;
+  --color: white;
+
+  --border-radius: 28px;
+  --box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+
+  font-weight: 800;
+  text-transform: none;
+  font-size: 18px;
+  height: 52px;
+}
+
+.gatito {
+  width: 120px;
+  animation: flotar 3s ease-in-out infinite;
+}
+
+@keyframes aparecerLogo {
+  0% {
+    opacity: 0;
+    transform: translateY(-25px) scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aparecerTexto {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flotar {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}

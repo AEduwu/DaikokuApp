@@ -10,6 +10,7 @@ import { addIcons } from 'ionicons';
 import { addOutline, trashOutline } from 'ionicons/icons';
 import { AuthService } from '../../services/auth';
 import { of } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
 interface Ingreso {
   nombre: string;
@@ -19,11 +20,12 @@ interface Ingreso {
 @Component({
   selector: 'app-onboarding',
   templateUrl: './onboarding.page.html',
+  styleUrls: ['./onboarding.page.scss'],
   imports: [
     FormsModule,
     CurrencyPipe,
     IonContent, IonInput, IonButton, IonItem,
-    IonLabel, IonText, IonSpinner, IonIcon
+    IonLabel, IonText, IonSpinner, IonIcon, CommonModule
   ],
 })
 export class OnboardingPage implements OnInit {
@@ -192,4 +194,53 @@ export class OnboardingPage implements OnInit {
   omitirMeta() {
     this.router.navigate(['/home']);
   }
+
+  // Formatear monto
+    formatearMonto(event: any) {
+
+      let valor = event.target.value;
+
+      // eliminar todo lo que no sea número
+      valor = valor.replace(/\D/g, '');
+
+      // convertir a número
+      const numero = parseInt(valor || '0', 10);
+
+      // guardar valor limpio
+      this.nuevoIngresoMonto = numero;
+
+      // formatear con puntos
+      event.target.value = numero.toLocaleString('es-CL');
+
+    }
+// Formatear presupuesto
+    formatearPresupuesto(event: CustomEvent) {
+
+      const valor = String(event.detail.value || '');
+
+      const soloNumeros = valor.replace(/\D/g, '');
+      const numero = Number(soloNumeros || 0);
+
+      this.monthlyBudget = numero;
+
+      const input = event.target as HTMLIonInputElement;
+      input.value = numero > 0 ? numero.toLocaleString('es-CL') : '';
+
 }
+
+// Formatear meta
+    formatearMeta(event: CustomEvent) {
+
+      const valor = String(event.detail.value || '');
+
+      const soloNumeros = valor.replace(/\D/g, '');
+      const numero = Number(soloNumeros || 0);
+
+      this.goalAmount = numero;
+
+      const input = event.target as HTMLIonInputElement;
+      input.value = numero > 0 ? numero.toLocaleString('es-CL') : '';
+
+}
+}
+

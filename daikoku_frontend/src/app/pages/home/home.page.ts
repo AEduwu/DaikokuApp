@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { TransactionModalComponent } from '../../components/transaction-modal/transaction-modal.component';
 
+
 interface Transaction {
   id: number;
   type: 'income' | 'expense';

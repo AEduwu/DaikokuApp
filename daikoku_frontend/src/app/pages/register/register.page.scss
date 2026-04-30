@@ -1,0 +1,67 @@
+.register-content {
+  --background: #f8f9f7;
+}
+
+.register-header {
+  height: 340px;
+  padding: 90px 28px 0;
+
+  background: linear-gradient(
+    180deg,
+    #5FDD9D 0%,
+    #84EEA3 60%,
+    #AAFFA9 100%
+  );
+
+  border-bottom-left-radius: 80px;
+  border-bottom-right-radius: 80px;
+
+  text-align: center;
+  color: white;
+}
+
+.register-header a {
+  color: #1a623b;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.register-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.register-header p {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.register-card {
+  width: 85%;
+  max-width: 380px;
+
+  margin: -160px auto 0;
+  padding: 22px 18px 24px;
+
+  background: white;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+
+  position: relative;
+  z-index: 2;
+}
+
+ion-item {
+  --background: transparent;
+  --border-color: transparent;
+  --highlight-height: 0;
+
+  border-bottom: 1px solid #e5e5e5;
+  margin-top: 14px;
+}
+
+ion-label {
+  font-size: 14px;
+}

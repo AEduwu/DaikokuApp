@@ -1,0 +1,176 @@
+.onboarding-content {
+  --background: #f8f9f7;
+}
+
+.onboarding-header {
+  height: 310px;
+  padding: 58px 28px 0;
+
+  background: linear-gradient(
+    180deg,
+    #5FDD9D 0%,
+    #84EEA3 60%,
+    #AAFFA9 100%
+  );
+
+  border-bottom-left-radius: 80px;
+  border-bottom-right-radius: 80px;
+
+  text-align: center;
+  color: white;
+}
+
+.onboarding-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.onboarding-header p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.onboarding-header span {
+  font-size: 12px;
+}
+
+.onboarding-card {
+  width: 86%;
+  max-width: 380px;
+
+  margin: -130px auto 0;
+  padding: 24px 20px;
+
+  background: white;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+  position: relative;
+  z-index: 2;
+}
+
+.form-box {
+  background: #f4f5f7;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.form-title {
+  margin: 0 0 14px;
+  font-weight: 800;
+  color: #222;
+}
+
+.form-title span {
+  font-weight: 400;
+  color: #777;
+}
+
+.custom-item {
+  --background: white;
+  --border-color: transparent;
+  --highlight-height: 0;
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+
+  margin-bottom: 12px;
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+}
+
+.custom-item ion-label {
+  color: #555;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.custom-item ion-input {
+  --padding-top: 6px;
+  --padding-bottom: 8px;
+  --placeholder-color: #999;
+}
+
+.main-button {
+  height: 52px;
+  margin-top: 24px;
+
+  --background: #5FDD9D;
+  --background-activated: #47c986;
+  --color: white;
+  --border-radius: 10px;
+
+  text-transform: none;
+  font-weight: 800;
+}
+
+.outline-button {
+  height: 48px;
+  margin-top: 12px;
+
+  --border-color: #5FDD9D;
+  --color: #2bae66;
+  --border-radius: 10px;
+
+  text-transform: none;
+  font-weight: 700;
+}
+
+.clear-button {
+  margin-top: 8px;
+
+  --color: #2bae66;
+
+  text-transform: none;
+  font-weight: 700;
+}
+
+.error-text {
+  padding: 8px 4px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.total-box {
+  text-align: right;
+  margin: 0 0 16px;
+}
+
+.total-box p {
+  margin: 0;
+  color: #777;
+  font-size: 13px;
+}
+
+.total-box h2 {
+  margin: 4px 0 0;
+  color: #2bae66;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.total-card {
+  background: #f4f5f7;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.total-card p {
+  margin: 0;
+  color: #777;
+  font-size: 13px;
+}
+
+.list-item {
+  --background: #f8f9f7;
+  --border-color: transparent;
+  --padding-start: 14px;
+  --inner-padding-end: 8px;
+
+  margin-bottom: 10px;
+  border-radius: 10px;
+}

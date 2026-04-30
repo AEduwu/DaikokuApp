@@ -1,51 +1,59 @@
-<ion-content class="ion-padding">
+<ion-content [fullscreen]="true" class="login-content">
 
-  <div style="margin-top: 80px; text-align: center;">
-    <h1>Daikoku</h1>
-    <p style="color: var(--ion-color-medium)">Iniciá sesión para continuar</p>
-  </div>
+  <section class="login-header">
+    <h1>Conéctate con tu cuenta</h1>
+    <p>Escribe tu correo y contraseña para conectarte</p>
+  </section>
 
-  <ion-item>
-    <ion-label position="floating">Email</ion-label>
+  <section class="login-card">
+
+    <ion-button expand="block" fill="outline" class="google-button">
+      <span class="google-g">G</span>
+      Continúa con Google
+    </ion-button>
+
+    <div class="divider">
+      <span></span>
+      <p>Conéctate con tu correo</p>
+      <span></span>
+    </div>
+
     <ion-input
       type="email"
       [(ngModel)]="email"
-      placeholder="tu@email.com">
+      placeholder="correo@gmail.com"
+      class="custom-input">
     </ion-input>
-  </ion-item>
 
-  <ion-item style="margin-top: 12px;">
-    <ion-label position="floating">Contraseña</ion-label>
     <ion-input
       type="password"
       [(ngModel)]="password"
-      (keyup.enter)="login()">
+      placeholder="********"
+      class="custom-input">
     </ion-input>
-  </ion-item>
 
-  @if(error) {
-    <ion-text color="danger">
-      <p style="padding: 8px 16px;">{{ error }}</p>
-    </ion-text>
+    <div class="options">
+      <label>
+        <input type="checkbox">
+        Recuérdame
+      </label>
+
+      <a>¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <ion-button expand="block" class="login-button" [disabled]="loading" (click)="login()">
+  @if(loading) {
+    <ion-spinner name="crescent"></ion-spinner>
+  } @else {
+    <span>Ingresar</span>
   }
+</ion-button>
 
-  <ion-button
-    expand="block"
-    style="margin-top: 24px;"
-    [disabled]="loading"
-    (click)="login()">
-    @if(loading) {
-      <ion-spinner name="crescent"></ion-spinner>
-    } @else {
-      <span>Ingresar</span>
-    }
-  </ion-button>
+    <p class="register-text">
+      ¿No tienes una cuenta?
+      <a routerLink="/register">¡Regístrate!</a>
+    </p>
 
-  <div style="text-align: center; margin-top: 16px;">
-    <ion-text color="medium">
-      ¿No tienes cuenta?
-      <a routerLink="/register" style="color: var(--ion-color-primary);">Registrate</a>
-    </ion-text>
-  </div>
+  </section>
 
 </ion-content>
