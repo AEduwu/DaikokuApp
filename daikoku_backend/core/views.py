@@ -1,3 +1,4 @@
+from .models import Category, Goal, Transaction, User, Budget
 from django.shortcuts import render
 from django.db.models import Sum, Q
 from django.utils import timezone
@@ -10,8 +11,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
-from .models import Category, Goal, Transaction, User
 from .serializers import (
+    BudgetSerializer,
     CategorySerializer,
     ChangePasswordSerializer,
     GoalContributionSerializer,
@@ -22,18 +23,38 @@ from .serializers import (
     UserRegisterSerializer,
 )
 
+
+class BudgetViewSet(viewsets.ModelViewSet):
+    """
+    GET    /api/budgets/          — lista presupuestos del mes
+    POST   /api/budgets/          — crear presupuesto por categoría
+    PATCH  /api/budgets/<id>/     — editar monto
+    DELETE /api/budgets/<id>/     — eliminar
+    """
+
+    serializer_class = BudgetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Budget.objects.filter(user=self.request.user)
+        month = self.request.query_params.get("month")
+        if month:
+            qs = qs.filter(month=month)
+        return qs
+
+
 class RegisterView(generics.CreateAPIView):
     """POST /api/auth/register/ — registro público, no requiere token."""
 
-    queryset           = User.objects.all()
-    serializer_class   = UserRegisterSerializer
+    queryset = User.objects.all()
+    serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     """GET / PATCH /api/auth/profile/ — perfil del usuario autenticado."""
 
-    serializer_class   = UserProfileSerializer
+    serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -43,7 +64,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 class ChangePasswordView(generics.UpdateAPIView):
     """PUT /api/auth/change-password/ — cambio de contraseña."""
 
-    serializer_class   = ChangePasswordSerializer
+    serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -62,7 +83,7 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     POST /api/categories/ — crea una categoría personalizada.
     """
 
-    serializer_class   = CategorySerializer
+    serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -75,7 +96,7 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """GET / PATCH / DELETE /api/categories/<id>/ — solo categorías propias."""
 
-    serializer_class   = CategorySerializer
+    serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -93,7 +114,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     GET    /api/transactions/summary/  — resumen del mes
     """
 
-    serializer_class   = TransactionSerializer
+    serializer_class = TransactionSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -102,10 +123,12 @@ class TransactionViewSet(viewsets.ModelViewSet):
         )
 
         # Filtros opcionales por query params
-        tx_type  = self.request.query_params.get("type")       # income | expense
-        category = self.request.query_params.get("category")   # id de categoría
-        month    = self.request.query_params.get("month")       # YYYY-MM
-        goal_id  = self.request.query_params.get("goal")        # id de meta
+        tx_type = self.request.query_params.get(
+            "type")       # income | expense
+        category = self.request.query_params.get(
+            "category")   # id de categoría
+        month = self.request.query_params.get("month")       # YYYY-MM
+        goal_id = self.request.query_params.get("goal")        # id de meta
 
         if tx_type:
             qs = qs.filter(type=tx_type)
@@ -142,7 +165,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             date__month=m,
         )
 
-        total_income   = qs.filter(type=Transaction.TransactionType.INCOME).aggregate(
+        total_income = qs.filter(type=Transaction.TransactionType.INCOME).aggregate(
             t=Sum("amount")
         )["t"] or 0
 
@@ -154,7 +177,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
         # Porcentaje del presupuesto mensual consumido
         budget = request.user.monthly_budget or 0
-        budget_used_pct = float(total_expenses / budget * 100) if budget > 0 else 0.0
+        budget_used_pct = float(
+            total_expenses / budget * 100) if budget > 0 else 0.0
 
         data = {
             "total_income":    total_income,
@@ -177,13 +201,14 @@ class GoalViewSet(viewsets.ModelViewSet):
     POST   /api/goals/<id>/contribute/     — aportar a una meta
     """
 
-    serializer_class   = GoalSerializer
+    serializer_class = GoalSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = Goal.objects.filter(user=self.request.user)
 
-        state = self.request.query_params.get("state")  # active | paused | completed | cancelled
+        # active | paused | completed | cancelled
+        state = self.request.query_params.get("state")
         if state:
             qs = qs.filter(state=state)
 
@@ -195,7 +220,7 @@ class GoalViewSet(viewsets.ModelViewSet):
         Aporte manual directo a una meta sin generar transacción.
         POST /api/goals/<id>/contribute/  body: { "amount": 500 }
         """
-        goal       = self.get_object()
+        goal = self.get_object()
         serializer = GoalContributionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(goal=goal)
@@ -204,14 +229,16 @@ class GoalViewSet(viewsets.ModelViewSet):
             GoalSerializer(goal, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )
-    
+
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
 
 class CompleteOnboardingView(generics.UpdateAPIView):
     """PATCH /api/auth/onboarding/ — guarda presupuesto y marca full_register = True"""
 
-    serializer_class   = UserProfileSerializer
+    serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -228,3 +255,22 @@ class CompleteOnboardingView(generics.UpdateAPIView):
         user.full_register = True
         user.save(update_fields=['full_register'])
         return Response(serializer.data)
+
+
+class BudgetViewSet(viewsets.ModelViewSet):
+    """
+    GET    /api/budgets/          — lista presupuestos del mes
+    POST   /api/budgets/          — crear presupuesto por categoría
+    PATCH  /api/budgets/<id>/     — editar monto
+    DELETE /api/budgets/<id>/     — eliminar
+    """
+
+    serializer_class = BudgetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Budget.objects.filter(user=self.request.user)
+        month = self.request.query_params.get("month")
+        if month:
+            qs = qs.filter(month=month)
+        return qs

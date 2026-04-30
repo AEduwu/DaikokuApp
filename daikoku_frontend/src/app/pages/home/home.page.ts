@@ -10,7 +10,7 @@ import {
   ModalController, ActionSheetController, AlertController, MenuController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, pencilOutline, trashOutline, homeOutline, trendingUpOutline, personOutline } from 'ionicons/icons';
+import { addOutline, pencilOutline, trashOutline, homeOutline, trendingUpOutline, personOutline, walletOutline } from 'ionicons/icons';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -58,7 +58,7 @@ export class HomePage implements OnInit {
     private router: Router,
     private http: HttpClient
   ) {
-    addIcons({ addOutline, pencilOutline, trashOutline, homeOutline, trendingUpOutline, personOutline });
+    addIcons({ addOutline, pencilOutline, trashOutline, homeOutline, trendingUpOutline, personOutline, walletOutline});
   }
 
   ngOnInit() {

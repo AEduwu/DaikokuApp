@@ -4,7 +4,6 @@ from django.utils import timezone
 from django.utils.timezone import localdate
 
 
-
 class UserManager(BaseUserManager):
 
     def create_user(self, email, username, password=None, **extra_fields):
@@ -28,28 +27,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     sobre el modelo (en lugar de extender el User por defecto de Django).
     """
 
-    username        = models.CharField(max_length=150, unique=True)
-    email           = models.EmailField(unique=True)
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True)
 
-    register_date   = models.DateField(default=timezone.now)
-    last_login      = models.DateTimeField(null=True, blank=True)
+    register_date = models.DateField(default=timezone.now)
+    last_login = models.DateTimeField(null=True, blank=True)
 
-    monthly_budget  = models.DecimalField(
+    monthly_budget = models.DecimalField(
         max_digits=12, decimal_places=2,
         null=True, blank=True,
         help_text="Presupuesto mensual del usuario"
     )
-    full_register   = models.BooleanField(
+    full_register = models.BooleanField(
         default=False,
         help_text="True cuando el usuario completó el onboarding"
     )
 
-    is_active  = models.BooleanField(default=True)
-    is_staff   = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
 
-    USERNAME_FIELD  = "email"          # login con email
+    USERNAME_FIELD = "email"          # login con email
     REQUIRED_FIELDS = ["username"]
 
     class Meta:
@@ -104,23 +103,24 @@ class Category(models.Model):
 class Transaction(models.Model):
 
     class TransactionType(models.TextChoices):
-        INCOME  = "income",  "Ingreso"
+        INCOME = "income",  "Ingreso"
         EXPENSE = "expense", "Gasto"
 
-    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transactions")
-    type        = models.CharField(max_length=10, choices=TransactionType.choices)
-    category    = models.ForeignKey(
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="transactions")
+    type = models.CharField(max_length=10, choices=TransactionType.choices)
+    category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="transactions"
     )
-    amount      = models.DecimalField(max_digits=12, decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.CharField(max_length=255, blank=True)
     date = models.DateField(default=localdate)
 
-    goal        = models.ForeignKey(
+    goal = models.ForeignKey(
         "Goal",
         on_delete=models.SET_NULL,
         null=True,
@@ -142,21 +142,23 @@ class Transaction(models.Model):
 class Goal(models.Model):
 
     class GoalState(models.TextChoices):
-        ACTIVE    = "active",    "Activa"
-        PAUSED    = "paused",    "Pausada"
+        ACTIVE = "active",    "Activa"
+        PAUSED = "paused",    "Pausada"
         COMPLETED = "completed", "Completada"
         CANCELLED = "cancelled", "Cancelada"
 
-    user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name="goals")
-    name           = models.CharField(max_length=200)
-    target_amount  = models.DecimalField(max_digits=12, decimal_places=2)
-    current_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="goals")
+    name = models.CharField(max_length=200)
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    current_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0)
     creation_date = models.DateField(default=timezone.localdate)
-    deadline       = models.DateField(
+    deadline = models.DateField(
         null=True, blank=True,
         help_text="Fecha límite opcional para la meta"
     )
-    state          = models.CharField(
+    state = models.CharField(
         max_length=10,
         choices=GoalState.choices,
         default=GoalState.ACTIVE
@@ -167,7 +169,6 @@ class Goal(models.Model):
         verbose_name = "Meta"
         verbose_name_plural = "Metas"
         ordering = ["-creation_date"]
-
 
     @property
     def progress_percentage(self) -> float:
@@ -193,3 +194,58 @@ class Goal(models.Model):
 
     def __str__(self):
         return f"{self.name} – {self.user.username} ({self.progress_percentage:.0f}%)"
+
+
+class Budget(models.Model):
+    """
+    Presupuesto por categoría para un mes específico.
+    Permite al usuario distribuir su monthly_budget entre categorías.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="budgets")
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name="budgets")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    month = models.CharField(
+        max_length=7,
+        help_text="Formato YYYY-MM, ej: 2026-04"
+    )
+
+    class Meta:
+        db_table = "budgets"
+        verbose_name = "Presupuesto"
+        verbose_name_plural = "Presupuestos"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "category", "month"],
+                name="unique_budget_per_category_per_month"
+            )
+        ]
+
+    @property
+    def spent_amount(self):
+        """Cuánto se ha gastado en esta categoría en el mes."""
+        from django.db.models import Sum
+        year, m = self.month.split("-")
+        total = Transaction.objects.filter(
+            user=self.user,
+            category=self.category,
+            type=Transaction.TransactionType.EXPENSE,
+            date__year=int(year),
+            date__month=int(m)
+        ).aggregate(t=Sum("amount"))["t"] or 0
+        return total
+
+    @property
+    def remaining_amount(self):
+        return max(self.amount - self.spent_amount, 0)
+
+    @property
+    def progress_percentage(self) -> float:
+        if self.amount <= 0:
+            return 0.0
+        return min(float(self.spent_amount / self.amount * 100), 100.0)
+
+    def __str__(self):
+        return f"{self.user.username} – {self.category.category_name} ({self.month}): ${self.amount}"
